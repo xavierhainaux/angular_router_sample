@@ -7,21 +7,22 @@ import 'package:shelf_proxy/shelf_proxy.dart';
 import 'utils.dart';
 
 main() {
+  print(Directory.current);
   final shelf.Router router = shelf.router();
 
   var extranetHandler =
-      fileHandler(new File('web/main.html'), allowCache: false);
+      fileHandler(new File('../web/main.html'), allowCache: false);
   router.get('/extranet', extranetHandler);
   router.get('/extranet/{+rest}', extranetHandler);
 
-  router.add('/', ['GET'], proxyHandler('http://localhost:8080'),
+  router.add('/', ['GET'], proxyHandler('http://localhost:8070'),
       exactMatch: false);
 
   _startServer(router.handler);
 }
 
 _startServer(Handler handler,
-    {InternetAddress address, int port: 60000}) async {
+    {InternetAddress address, int port: 60001}) async {
   address ??= InternetAddress.anyIPv6;
 
   HttpServer server = await HttpServer.bind(address, port, shared: true);

@@ -10,35 +10,44 @@ import 'src/build.template.dart' as build;
   selector: 'body',
   template: '''
 <h1>THE BODY </h1>
-<router-outlet [routes]="routes"></router-outlet>
+<router-outlet [routes]="routes" *ngIf="isInitialized"></router-outlet>
 ''',
-  directives: const [RouterOutlet],
+  directives: const [coreDirectives, routerDirectives],
 )
-class BodyComponent {
+class BodyComponent implements OnInit {
+  bool isInitialized = false;
+
   final List<RouteDefinition> routes = [
     new RouteDefinition(
         routePath: rootRoute, component: self.AppComponentNgFactory),
   ];
+
+  @override
+  void ngOnInit() async {
+    isInitialized = true;
+  }
 }
 
 @Component(
   selector: 'my-app',
   template: '''
-<h2>The app</h2>  
-
-<ul>
-  <li><a [routerLink]="dashboardUrl" routerLinkActive="active-route">Dashboard</a></li>
-  <li><a [routerLink]="buildsUrl" routerLinkActive="active-route">Builds</a></li>
-</ul>
-
-<router-outlet [routes]="routes"></router-outlet>
-<style>
-.active-route {
-  color: red;
-}
-</style>
+<message-manager>
+  <h2>The app</h2>  
+  
+  <ul>
+    <li><a [routerLink]="dashboardUrl" routerLinkActive="active-route">Dashboard</a></li>
+    <li><a [routerLink]="buildsUrl" routerLinkActive="active-route">Builds</a></li>
+  </ul>
+  
+  <router-outlet [routes]="routes"></router-outlet>
+  <style>
+  .active-route {
+    color: red;
+  }
+  </style>
+</message-manager>
 ''',
-  directives: const [RouterOutlet, RouterLink, RouterLinkActive],
+  directives: const [routerDirectives, MessageManagerComponent],
 )
 class AppComponent {
   final List<RouteDefinition> routes = [
@@ -52,4 +61,13 @@ class AppComponent {
 
   String get dashboardUrl => dashboardRoute.toUrl();
   String get buildsUrl => buildsRoute.toUrl();
+}
+
+
+@Component(selector: 'message-manager', template: '''
+Message manager wrapper
+<ng-content></ng-content>
+''')
+class MessageManagerComponent {
+
 }
