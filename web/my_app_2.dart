@@ -1,5 +1,5 @@
 import 'package:angular/angular.dart';
-import 'package:my_angular_project/my_app_with_router.template.dart' as app;
+import 'package:my_angular_project/router_2/my_app.template.dart' as app;
 import 'package:my_angular_project/router.dart';
 
 import 'main.template.dart' as self;
