@@ -27,10 +27,18 @@ class MyAppComponent {
 @Component(selector: 'my-dashboard-page', template: '''
 <h1>Dashboard</h1>
 ''')
-class MyDashboardPage implements OnActivate {
+class MyDashboardPage implements OnActivate, OnInit {
+  final Route _route;
+
+  MyDashboardPage(this._route);
+
   @override
   onActivate(Route route) {
-    // TODO: implement onActivate
+    ComponentFactory f;
+  }
+
+  ngOnInit() {
+
   }
 }
 
@@ -43,10 +51,21 @@ class MyDashboardPage implements OnActivate {
   <!--<my-game-list *page="'list'"></my-game-list>
   <my-game-detail *page="'detail/(id)'"></my-game-detail>-->
 ''', directives: const [routerDirectives, GameListPage, GameDetailPage])
-class MyGamePage implements OnActivate {
+class MyGamePage implements OnActivate, OnInit {
+  final Route _route;
+
+  MyGamePage(this._route) {
+    print('MyGamePage ${_route}');
+  }
+
   @override
   onActivate(Route route) {
-    // TODO: implement onActivate
+
+  }
+
+  @override
+  void ngOnInit() {
+    print('Init MyGamePage ${_route.page.url}');
   }
 }
 
@@ -79,7 +98,7 @@ class GameDetailPage implements OnActivate {
 
   @override
   onActivate(Route route) async {
-    String gameId = route.parameters['gameId'];
+    String gameId = 'aga';//route.parameters['gameId'];
 
     // Pouvoir aussi écrire:
     // tous les paramètres de toutes les routes mergé

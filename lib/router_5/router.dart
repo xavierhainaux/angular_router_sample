@@ -11,7 +11,8 @@ const List<Type> routerDirectives = const [
 @Component(
     selector: 'router',
     template: '<ng-content></ng-content>',
-    visibility: Visibility.all)
+    visibility: Visibility.all,
+    providers: const [])
 class Router {
   Router();
 
@@ -46,22 +47,36 @@ class Route {
   Map<String, String> get allParameters => {};
 }
 
+Route routeFactory() {
+  print('create route');
+  //print('create route ${directive.page}');
+  return new Route();
+}
+
 @Directive(
-    selector: '[page]', providers: const [const Provider(PageDirectiveHolder)])
+    selector: '[page]',
+    providers: const [
+      const Provider(PageDirectiveHolder),
+      const Provider(Route, useFactory: routeFactory),
+    ],
+    visibility: Visibility.all)
 class PageDirective implements OnInit, OnDestroy {
   final PageDirectiveHolder _selfHolder;
   final Router _router;
   final TemplateRef _templateRef;
   final ViewContainerRef _viewContainer;
+  final ComponentRef _componentRef;
 
   PageDirective(
       this._router,
       this._viewContainer,
       this._templateRef,
       @Optional() @SkipSelf() PageDirectiveHolder parentHolder,
-      @Self() this._selfHolder) {
+      @Self() this._selfHolder,
+      this._componentRef) {
     _selfHolder.directive = this;
     _selfHolder.parent = parentHolder;
+    print('Page directive created ${_componentRef}');
   }
 
   String get page => _page;
@@ -112,9 +127,6 @@ class PageDirectiveHolder {
 
 @Directive(selector: '[link]')
 class LinkDirective {
-
   @Input()
-  set link(String link) {
-
-  }
+  set link(String link) {}
 }

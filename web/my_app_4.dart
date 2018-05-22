@@ -1,12 +1,10 @@
 import 'package:angular/angular.dart';
-import 'package:my_angular_project/router_5/my_app.template.dart' as app;
+import 'package:my_angular_project/router_4/my_app.template.dart' as app;
 import 'package:my_angular_project/router.dart';
 
 import 'main.template.dart' as self;
 
-@GenerateInjector(const [
-  routerProviders
-])
+@GenerateInjector(const [routerProviders])
 final InjectorFactory injector = self.injector$Injector;
 
 main() {

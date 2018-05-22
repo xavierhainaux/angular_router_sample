@@ -12,19 +12,31 @@ import 'router.dart';
   </ul>
   <button (click)="doSomething()">Do something</button>
 
+  <router-outlet [routes]="routes"></router-outlet>
   <my-dashboard-page *page="'dashboard'"></my-dashboard-page>
   <my-games-page *page="'games'"></my-games-page>
 </router>
 ''', directives: const [routerDirectives, MyDashboardPage, MyGamePage])
 class MyAppComponent {
-  doSomething() {}
+  doSomething() {
+    ComponentFactory f;
+    //f.create(injector)
+
+  }
+
+  final List<RouteDefinition> routes = [
+    new RouteDefinition('dashboard', dashboard.MyDashboardPageNgFactory),
+  ];
 }
 
 @Component(selector: 'my-dashboard-page', template: '''
 <h1>Dashboard</h1>
 ''')
-class MyDashboardPage {
-
+class MyDashboardPage extends Page {
+  @override
+  onActivate(Route route) {
+    // TODO: implement onActivate
+  }
 }
 
 @Component(selector: 'my-games-page', template: '''
@@ -35,16 +47,26 @@ class MyDashboardPage {
 
   <my-game-list *page="'list'"></my-game-list>
   <my-game-detail *page="'detail/(id)'"></my-game-detail>
-''', directives: const [routerDirectives, GameListPage, GameDetailPage])
-class MyGamePage {
-
+''', directives: const [
+  routerDirectives,
+  GameListPage,
+  GameDetailPage
+])
+class MyGamePage extends Page {
+  @override
+  onActivate(Route route) {
+    // TODO: implement onActivate
+  }
 }
 
 @Component(selector: 'my-game-list', template: '''
 <table></table>
 ''')
-class GameListPage {
-
+class GameListPage extends Page {
+  @override
+  onActivate(Route route) {
+    // Fetch la liste des jeux
+  }
 }
 
 @Component(selector: 'my-game-detail', template: '''
@@ -60,13 +82,16 @@ class GameListPage {
   <related-page *page="related"></related-page>-->
 
 </template>
-''', directives: const [coreDirectives, routerDirectives])
-class GameDetailPage implements OnInit {
+''', directives: const [
+  coreDirectives,
+  routerDirectives
+])
+class GameDetailPage extends Page {
   Map<String, String> game;
 
   @override
-  ngOnInit() async {
-    String gameId = 'aga'; //_route.parameters['gameId'];
+  onActivate(Route route) async {
+    String gameId = route.parameters['gameId'];
 
     // Pouvoir aussi écrire:
     // tous les paramètres de toutes les routes mergé
@@ -89,7 +114,7 @@ class GameDetailPage implements OnInit {
 
 <button (click)="save()">Save</button>
 ''')
-class GameDetailDescriptionPage  {
+class GameDetailDescriptionPage implements Page {
   final GameDetailPage _parent;
   final Router _router;
 

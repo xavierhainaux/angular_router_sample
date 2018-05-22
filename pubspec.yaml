@@ -8,7 +8,7 @@ environment:
   sdk: '>=1.24.0 <2.0.0'
 
 dependencies:
-  angular: ^5.0.0-alpha+11
+  angular: ^5.0.0-alpha+12
   angular_components:
   angular_router:
   angular_forms:
