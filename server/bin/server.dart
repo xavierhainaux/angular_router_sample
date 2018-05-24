@@ -11,7 +11,7 @@ main() {
   final shelf.Router router = shelf.router();
 
   var extranetHandler =
-      fileHandler(new File('../web/main.html'), allowCache: false);
+      fileHandler(new File('../web/my_app_6.html'), allowCache: false);
   router.get('/extranet', extranetHandler);
   router.get('/extranet/{+rest}', extranetHandler);
 
