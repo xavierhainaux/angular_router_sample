@@ -8,7 +8,7 @@ import 'package:path/path.dart' as p;
 import 'package:my_angular_project/router_6/path.dart';
 
 const List<Type> routerDirectives = const [
-  Router,
+  RouterDirective,
   LinkDirective,
   RouterOutlet,
 ];
@@ -20,17 +20,36 @@ class RouteDefinition {
   RouteDefinition(this.pathPattern, this.componentFactory);
 }
 
+@Injectable()
+class Router {
+  final RouterDirective _router;
+  final RouterOutlet _parent;
+
+  Router(this._router, @Optional() this._parent);
+
+  void navigateTo(String url) {
+    _router._navigateTo(_router._getFullLink(url, _parent));
+  }
+
+  String getFullUrl(String url) => _router._getFullLink(url, _parent);
+
+  String get url => _router._location.url;
+
+  Stream<String> get onUrlChange => _router.onUrlChange;
+}
+
 @Component(
     selector: 'router',
     template: '<ng-content></ng-content>',
-    visibility: Visibility.all)
-class Router implements OnInit, OnDestroy {
+    visibility: Visibility.all,
+    providers: const [
+      const Provider(Router),
+    ])
+class RouterDirective implements OnInit, OnDestroy {
   final location.Location _location = new location.Location();
   final StreamController<String> _onChangeController =
       new StreamController<String>.broadcast();
   StreamSubscription _popStateSubscription;
-
-  Router();
 
   @Input()
   set base(String base) {
@@ -76,10 +95,11 @@ class Router implements OnInit, OnDestroy {
     selector: 'router-outlet',
     providers: const [
       const Provider(RouterOutletToken),
+      const Provider(Router),
     ],
     visibility: Visibility.all)
 class RouterOutlet implements location.RouterOutlet, OnDestroy {
-  final Router _router;
+  final RouterDirective _router;
   final ViewContainerRef _viewContainerRef;
   final RouterOutletToken _parent;
   ComponentRef _currentComponent;
@@ -160,13 +180,12 @@ class RouterOutletToken {
 @Directive(selector: '[link]')
 class LinkDirective implements AfterViewInit, OnDestroy {
   final Router _router;
-  final RouterOutlet _parentOutlet;
   final html.Element _element;
   String _target;
   StreamSubscription _keyPressSubscription, _onUrlChangeSubscription;
 
-  LinkDirective(this._router, @Optional() this._parentOutlet,
-      @Attribute('target') this._target, this._element) {
+  LinkDirective(
+      this._router, @Attribute('target') this._target, this._element) {
     // The browser will synthesize a click event for anchor elements when they
     // receive an Enter key press. For other elements, we must manually add a
     // key press listener to ensure the link remains keyboard accessible.
@@ -178,7 +197,7 @@ class LinkDirective implements AfterViewInit, OnDestroy {
   @override
   void ngAfterViewInit() {
     _onUrlChangeSubscription = _router.onUrlChange.listen(_onUrlUpdate);
-    _onUrlUpdate(_router._location.url);
+    _onUrlUpdate(_router.url);
   }
 
   @override
@@ -195,7 +214,7 @@ class LinkDirective implements AfterViewInit, OnDestroy {
   String _fullPath;
   @Input()
   set link(String link) {
-    _fullPath = _router._getFullLink(link, _parentOutlet);
+    _fullPath = _router.getFullUrl(link);
   }
 
   /// Indicates the URL when the hovering on the link.
@@ -226,7 +245,7 @@ class LinkDirective implements AfterViewInit, OnDestroy {
         event.preventDefault();
 
         html.window.history.pushState(null, '', _fullPath);
-        _router._navigateTo(_fullPath);
+        _router.navigateTo(_fullPath);
       }
     }
   }

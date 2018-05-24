@@ -25,6 +25,10 @@ class Location {
       segments.addAll(_base.segments);
     }
 
+    if (link.startsWith('/')) {
+      return '/${p.url.joinAll(segments)}$link';
+    }
+
     List<String> outletsPath = [];
     while (parent != null) {
       outletsPath.add(parent.currentPath);
@@ -33,7 +37,7 @@ class Location {
     segments.addAll(outletsPath.reversed);
     segments.add(link);
 
-    return p.url.normalize(p.url.joinAll(segments));
+    return '/' + p.url.normalize(p.url.joinAll(segments));
   }
 
   set base(String base) {
@@ -45,6 +49,7 @@ class Location {
   set url(String url) {
     url ??= '';
     url = trimSlashes(p.url.normalize(url));
+    url = '/$url';
 
     _url = url;
 
