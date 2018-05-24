@@ -4,6 +4,8 @@ typedef _OnDeactivate();
 
 class Location {
 
+  String get url => _url;
+  String _url;
   set url(String url) {
     // Les muscles du moteur: basé sur la valeur de l'url, on parcours tous les
     // noeuds enregistrés (qui sont triés) et si leur Route est modifiée, on
@@ -11,10 +13,15 @@ class Location {
     // On tient compte de ne jamais ré-appeler plusieurs fois d'affilées avec les mêmes valeurs.
   }
 
-  register(String fullPath, _OnActivate onActivate, _OnDeactivate onDeactivate) {
+  register(LocationDelegate delegate) {
     // Quand nouveau s'enregistre, on fait comme si on raffraichissait l'url
-
+    this.url = url;
   }
+}
+
+abstract class LocationDelegate {
+  void onActivate(Route route);
+  void onDeactivate();
 }
 
 class Route {

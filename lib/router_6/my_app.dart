@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:angular/angular.dart';
 import 'router.dart';
 
+import 'my_app.template.dart' as self;
+
 @Component(selector: 'body', template: '''
 <h1>My app</h1>
 <router base="/extranet">
@@ -13,26 +15,23 @@ import 'router.dart';
   <button (click)="doSomething()">Do something</button>
 
   <router-outlet [routes]="routes"></router-outlet>
-  <my-dashboard-page *page="'dashboard'"></my-dashboard-page>
-  <my-games-page *page="'games'"></my-games-page>
 </router>
-''', directives: const [routerDirectives, MyDashboardPage, MyGamePage])
+''', directives: const [routerDirectives])
 class MyAppComponent {
   doSomething() {
-    ComponentFactory f;
-    //f.create(injector)
 
   }
 
   final List<RouteDefinition> routes = [
-    new RouteDefinition('dashboard', dashboard.MyDashboardPageNgFactory),
+    new RouteDefinition('dashboard', self.MyDashboardPageNgFactory),
+    new RouteDefinition('games', self.MyGamePageNgFactory),
   ];
 }
 
 @Component(selector: 'my-dashboard-page', template: '''
 <h1>Dashboard</h1>
 ''')
-class MyDashboardPage extends Page {
+class MyDashboardPage implements Page {
   @override
   onActivate(Route route) {
     // TODO: implement onActivate
@@ -45,18 +44,21 @@ class MyDashboardPage extends Page {
     <li><a link="">List</a></li>
   </ul>
 
-  <my-game-list *page="'list'"></my-game-list>
-  <my-game-detail *page="'detail/(id)'"></my-game-detail>
+  <router-outlet [routes]="routes"></router-outlet>
 ''', directives: const [
   routerDirectives,
-  GameListPage,
-  GameDetailPage
 ])
 class MyGamePage extends Page {
   @override
   onActivate(Route route) {
     // TODO: implement onActivate
   }
+
+  final List<RouteDefinition> routes = [
+    new RouteDefinition('list', self.GameListPageNgFactory),
+    new RouteDefinition('detail/(id)', self.GameDetailPageNgFactory),
+  ];
+
 }
 
 @Component(selector: 'my-game-list', template: '''
@@ -86,7 +88,7 @@ class GameListPage extends Page {
   coreDirectives,
   routerDirectives
 ])
-class GameDetailPage extends Page {
+class GameDetailPage implements Page {
   Map<String, String> game;
 
   @override

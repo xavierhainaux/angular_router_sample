@@ -4,8 +4,8 @@ const List<Provider> routerProviders = const [];
 
 const List<Type> routerDirectives = const [
   Router,
-  PageDirective,
   LinkDirective,
+  RouterOutlet,
 ];
 
 class RouteDefinition {
@@ -25,29 +25,12 @@ class Router {
   String base;
 
   void navigateTo(String url) {}
-
-  _registerDirective(PageDirectiveHolder holder) {
-    //TODO(xha): lancer une exception si il y a un conflit sur les routes en cours.
-
-    // Poster une nouvelle tâche pour mettre à jour les composants
-  }
-
-  _unregisterDirective(PageDirectiveHolder holder) {}
-
-  _updateDirectives() {
-    // TODO(xha):
-  }
-
-  @ContentChildren(PageDirective, descendants: true)
-  set pages(List pages) {
-    print('Set pages: $pages');
-  }
 }
 
 class Route {
   List<Route> ancestors;
 
-  Map<String, String> parameters;
+  Map<String, String> parameters = {};
 
   //TODO(xha): remonte les ancestors et rempli une Map avec tous les paramètres
   Map<String, String> get allParameters => {};
@@ -55,81 +38,52 @@ class Route {
 
 class Page {
   onActivate(Route route) {}
-
 }
 
-@Directive(
-    selector: '[page]', providers: const [const Provider(PageDirectiveHolder)])
-class PageDirective implements OnInit, OnDestroy {
-  final PageDirectiveHolder _selfHolder;
-  final Router _router;
-  final TemplateRef _templateRef;
-  final ViewContainerRef _viewContainer;
-  final List _pageComponent;
+@Component(
+    selector: 'router-outlet',
+    template: '''
 
-  PageDirective(
-      this._router,
-      this._viewContainer,
-      this._templateRef,
-      @Optional() @SkipSelf() PageDirectiveHolder parentHolder,
-      @Self() this._selfHolder,
-     @Self() @Optional() @Inject(Page) this._pageComponent) {
-    _selfHolder.directive = this;
-    _selfHolder.parent = parentHolder;
-    print('pp $_pageComponent');
+''',
+    visibility: Visibility.all,
+    providers: const [
+      const Provider(RouterOutletToken),
+    ])
+class RouterOutlet {
+  final ViewContainerRef _viewContainerRef;
+  final RouterOutletToken _parent;
+
+  RouterOutlet(this._viewContainerRef, @Self() RouterOutletToken self,
+      @SkipSelf() @Optional() this._parent) {
+    self.routerOutlet = this;
+    print('router-outlet: ${_parent?.routerOutlet}');
   }
 
-  String get page => _page;
-  String _page;
+  List<RouteDefinition> _routes;
   @Input()
-  set page(String url) {
-    //assert(_page == null, '[page] can be set only once');
+  set routes(List<RouteDefinition> routes) {
+    _routes = routes;
 
-    _page = url;
-    print('[page]=$url');
+    RouteDefinition def = routes.last;
+    final componentRef = def.componentFactory
+        .create(new Injector.map({}, _viewContainerRef.injector));
+    componentRef.changeDetectorRef.detectChanges();
 
-    if (true) {
-      _viewContainer.createEmbeddedView(_templateRef);
-    } else {
-      _viewContainer.clear();
+    _viewContainerRef.insert(componentRef.hostView);
+
+    var instance = componentRef.instance;
+    if (instance is Page) {
+      instance.onActivate(new Route());
     }
-  }
-
-  @override
-  void ngOnInit() {
-    assert(_page != null, '[page] should have been set');
-
-    _router._registerDirective(_selfHolder);
-  }
-
-  @override
-  void ngOnDestroy() {
-    _router._unregisterDirective(_selfHolder);
   }
 }
 
-class PageDirectiveHolder {
-  PageDirectiveHolder parent;
-  PageDirective directive;
-  String get name => directive.page;
-
-  Iterable<PageDirectiveHolder> get ancestorsAndSelf sync* {
-    if (parent != null) {
-      yield* parent.ancestorsAndSelf;
-    }
-    yield this;
-  }
-
-  String get fullUrlPattern => ancestorsAndSelf.map((d) => d.name).join('/');
-
-  toString() => 'ParentProvider($fullUrlPattern)';
+class RouterOutletToken {
+  RouterOutlet routerOutlet;
 }
 
 @Directive(selector: '[link]')
 class LinkDirective {
-
   @Input()
-  set link(String link) {
-
-  }
+  set link(String link) {}
 }
