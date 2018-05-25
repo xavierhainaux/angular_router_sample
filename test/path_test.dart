@@ -1,5 +1,6 @@
 import 'package:my_angular_project/router_6/path.dart';
 import 'package:test/test.dart';
+import 'package:path/path.dart' as p;
 
 main() {
   test('Peek path (1)', () {
@@ -33,6 +34,10 @@ main() {
     Peek peek = path.peek(new PathPattern('/detail//:id,:type/'));
     expect(peek.segments, equals(['detail', '12,chose']));
     expect(peek.parameters, equals({'id': '12', 'type': 'chose'}));
+  });
+
+  test('Join all', () {
+    expect(p.url.joinAll(['a', '', '', 'b', '']), equals('a/b'));
   });
 
   //TODO(xha): rajouter des tests pour vérifier la normalization correct des path

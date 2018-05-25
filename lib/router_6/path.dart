@@ -18,11 +18,15 @@ class PathPattern {
     _segments = p.url.split(path);
   }
 
+  bool operator==(other) => other is PathPattern && other.original == original;
+
+  int get hashCode => _original.hashCode + 1;
+
   List<String> get segments => _segments;
 
   String get original => _original;
 
-  String toString() => 'PathPattern(${_segments.join('/')})';
+  String toString() => 'PathPattern(${p.url.joinAll(_segments)})';
 }
 
 final RegExp _findParameters = new RegExp(r':([a-zA-Z0-9_]+)');
@@ -88,7 +92,7 @@ class Path {
     return new Peek(this, pattern, matchedSegments, parameters);
   }
 
-  String toString() => 'Path(full: $_fullUrl, remaining: ${_remainingSegments.join('/')})';
+  String toString() => 'Path(full: $_fullUrl, remaining: ${p.url.joinAll(_remainingSegments)})';
 }
 
 class Peek {
@@ -99,7 +103,7 @@ class Peek {
 
   Peek(this.path, this.pattern, this.segments, this.parameters);
 
-  String get joinedSegments => segments.join('/');
+  String get joinedSegments => p.url.joinAll(segments);
 
-  String toString() => 'Peek(${segments.join('/')}, parameters: $parameters)';
+  String toString() => 'Peek(${p.url.joinAll(segments)}, parameters: $parameters)';
 }

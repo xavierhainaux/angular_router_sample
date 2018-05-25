@@ -28,10 +28,10 @@ class Router {
   Router(this._router, @Optional() this._parent);
 
   void navigateTo(String url) {
-    _router._navigateTo(_router._getFullLink(url, _parent));
+    _router._navigateTo(_router._getFullUrl(url, _parent));
   }
 
-  String getFullUrl(String url) => _router._getFullLink(url, _parent);
+  String getFullUrl(String url) => _router._getFullUrl(url, _parent);
 
   String get url => _router._location.url;
 
@@ -86,8 +86,8 @@ class RouterDirective implements OnInit, OnDestroy {
     _popStateSubscription.cancel();
   }
 
-  String _getFullLink(String link, RouterOutlet parent) {
-    return _location.getFullLink(link, parent);
+  String _getFullUrl(String link, RouterOutlet parent) {
+    return _location.getFullUrl(link, parent);
   }
 }
 
@@ -207,13 +207,17 @@ class LinkDirective implements AfterViewInit, OnDestroy {
   }
 
   void _onUrlUpdate(String url) {
-    bool isActive = p.isWithin(_fullPath, url) || _fullPath == url;
+    bool isActive = _fullPath == url;
+    if (!isActive && _link != '') {
+      isActive = p.isWithin(_fullPath, url);
+    }
     _element.classes.toggle('link-active', isActive);
   }
 
-  String _fullPath;
+  String _fullPath, _link;
   @Input()
   set link(String link) {
+    _link = link;
     _fullPath = _router.getFullUrl(link);
   }
 
@@ -239,13 +243,13 @@ class LinkDirective implements AfterViewInit, OnDestroy {
   }
 
   void _trigger(html.Event event) {
-    if (_fullPath != null) {
+    if (_link != null) {
       // The presence of target="_blank" opens link in new tab.
       if (_target == null || _target == '_self') {
         event.preventDefault();
 
         html.window.history.pushState(null, '', _fullPath);
-        _router.navigateTo(_fullPath);
+        _router.navigateTo(_link);
       }
     }
   }

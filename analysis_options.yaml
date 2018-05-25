@@ -1,8 +1,5 @@
 analyzer:
   strong-mode: true
-  errors:
-    # Allow importing .template.dart files without an analyzer error.
-    uri_has_not_been_generated: ignore
   exclude:
     - "**/.dart_tool/**"
     - "**/build/**"

@@ -9,7 +9,7 @@ import 'my_app.template.dart' as self;
 <h1>My app</h1>
 <router base="extranet">
   <ul>
-    <li><a link="dashboard">Dashboard</a></li>
+    <li><a link="">Dashboard</a></li>
     <li><a link="games">Games</a></li>
   </ul>
   <button (click)="doSomething()">Do something</button>
@@ -21,7 +21,7 @@ class MyAppComponent {
   doSomething() {}
 
   final List<RouteDefinition> routes = [
-    new RouteDefinition('dashboard', self.MyDashboardPageNgFactory),
+    new RouteDefinition('', self.MyDashboardPageNgFactory),
     new RouteDefinition('games', self.MyGamePageNgFactory),
   ];
 }
@@ -125,16 +125,40 @@ class GameDetailDescriptionPage {
   Game get game => _parent.game;
 
   save() {
-    //TODO(xha): il faut un Router mais qui soit configuré pour le RouterOutlet
-    // parent.
-    //_router.navigateTo('../../../list');
+    _router.navigateTo('../../../list');
   }
 }
 
 @Component(selector: 'related', template: '''
 <h5>Related</h5>
-''')
-class RelatedPage {}
+<a link="/dashboard">Dashboard</a>
+
+<router-outlet [routes]="routes"></router-outlet>
+''', directives: const [routerDirectives])
+class RelatedPage {
+
+  final List<RouteDefinition> routes = [
+    new RouteDefinition('', self.RelatedSubPageNgFactory),
+  ];
+}
+
+@Component(selector: 'related-sub', template: '''
+<h5>Related Sub</h5>
+<router-outlet [routes]="routes"></router-outlet>
+''', directives: const [routerDirectives])
+class RelatedSubPage {
+
+  final List<RouteDefinition> routes = [
+    new RouteDefinition('', self.RelatedSubSubPageNgFactory),
+  ];
+}
+
+@Component(selector: 'related-sub-sub', template: '''
+<h5>Related Sub Sub</h5>
+''', directives: const [routerDirectives])
+class RelatedSubSubPage {
+
+}
 
 class Game {
   final String id;

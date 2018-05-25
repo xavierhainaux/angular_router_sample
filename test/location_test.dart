@@ -1,4 +1,5 @@
 import 'package:my_angular_project/router_6/location.dart';
+import 'package:my_angular_project/router_6/path.dart';
 import 'package:test/test.dart';
 
 main() {
@@ -49,6 +50,127 @@ main() {
           'activate(advanced) advanced/:type {type: machin}'
         ]));
     logs.clear();
+  });
+
+  test('Get full link', () {
+    Location location = new Location()..base = 'extranet';
+
+    List<String> logs = [];
+    RouterOutlet rootOutlet = new MockOutlet('root', null, logs);
+    RouterOutlet gamesOutlet = new MockOutlet('games', rootOutlet, logs);
+    RouterOutlet gameDetailOutlet = new MockOutlet('detail', gamesOutlet, logs);
+    RouterOutlet gameAdvancedOutlet =
+        new MockOutlet('advanced', gameDetailOutlet, logs);
+
+    location.register(rootOutlet, ['dashboard', 'games']);
+    location.register(gamesOutlet, ['list', ':id']);
+    location.register(gameDetailOutlet, ['detail']);
+    location.register(gameAdvancedOutlet, ['advanced/:type']);
+
+    expect(location.getFullUrl('/dashboard', gamesOutlet),
+        equals('/extranet/dashboard'));
+  });
+
+  test('Location with default', () {
+    Location location = new Location()..base = 'extranet';
+
+    List<String> logs = [];
+    RouterOutlet rootOutlet = new MockOutlet('root', null, logs);
+    RouterOutlet gamesOutlet = new MockOutlet('games', rootOutlet, logs);
+    RouterOutlet gameDetailOutlet = new MockOutlet('detail', gamesOutlet, logs);
+    RouterOutlet gameAdvancedOutlet =
+        new MockOutlet('advanced', gameDetailOutlet, logs);
+
+    location.register(rootOutlet, ['games']);
+    location.register(gamesOutlet, [':id']);
+    location.register(gameDetailOutlet, ['']);
+    location.register(gameAdvancedOutlet, ['']);
+
+    location.url = 'extranet/games/12';
+
+    expect(
+        logs,
+        equals([
+          'activate(root) games {}',
+          'activate(games) :id {id: 12}',
+          'activate(detail)  {}',
+          'activate(advanced)  {}',
+        ]));
+    logs.clear();
+
+    RouterOutlet gameEvenMoreAdvancedOutlet =
+        new MockOutlet('more-advanced', gameAdvancedOutlet, logs);
+    location.register(gameEvenMoreAdvancedOutlet, ['']);
+    location.url = 'extranet/games/12';
+
+    expect(
+        logs,
+        equals([
+          'activate(more-advanced)  {}',
+        ]));
+  });
+
+  test('Location with default not at end', () {
+    Location location = new Location()..base = 'extranet';
+
+    List<String> logs = [];
+    RouterOutlet rootOutlet = new MockOutlet('root', null, logs);
+    RouterOutlet gamesOutlet = new MockOutlet('games', rootOutlet, logs);
+    RouterOutlet gameDetailOutlet = new MockOutlet('detail', gamesOutlet, logs);
+    RouterOutlet gameAdvancedOutlet =
+        new MockOutlet('advanced', gameDetailOutlet, logs);
+
+    location.register(rootOutlet, ['games', '']);
+    location.register(gamesOutlet, ['', ':id']);
+    location.register(gameDetailOutlet, ['']);
+    location.register(gameAdvancedOutlet, ['']);
+
+    location.url = 'extranet/games/12';
+
+    expect(
+        logs,
+        equals([
+          'activate(root) games {}',
+          'activate(games) :id {id: 12}',
+          'activate(detail)  {}',
+          'activate(advanced)  {}',
+        ]));
+    logs.clear();
+
+    RouterOutlet gameEvenMoreAdvancedOutlet =
+        new MockOutlet('more-advanced', gameAdvancedOutlet, logs);
+    location.register(gameEvenMoreAdvancedOutlet, ['']);
+    location.url = 'extranet/games/12';
+
+    expect(
+        logs,
+        equals([
+          'activate(more-advanced)  {}',
+        ]));
+  });
+
+  test('Sort', () {
+    List<PathPattern> paths = [
+      new PathPattern(''),
+      new PathPattern('a'),
+      new PathPattern(''),
+      new PathPattern('b'),
+      new PathPattern(''),
+      new PathPattern('')
+    ];
+
+    var sorted = OutletHolder.sortPaths(paths);
+
+    expect(
+        sorted,
+        equals([
+          new PathPattern('a'),
+          new PathPattern('b'),
+          new PathPattern(''),
+          new PathPattern(''),
+          new PathPattern(''),
+          new PathPattern('')
+        ]));
   });
 }
 

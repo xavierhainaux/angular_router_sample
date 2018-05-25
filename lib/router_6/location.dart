@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:my_angular_project/router_6/path.dart';
 import 'package:path/path.dart' as p;
 
@@ -15,18 +16,19 @@ abstract class RouterOutlet {
 class Location {
   PathPattern _base;
   final Set<OutletHolder> _allOutlets = new Set();
-
-  // Les entrées activés triée de la racine à la feuille
   final List<MatchedEntry> _activatedEntries = [];
 
-  String getFullLink(String link, RouterOutlet parent) {
+  // Retourne le chemin complet en rajoutant la base.
+  String getFullUrl(String link, RouterOutlet parent) {
     List<String> segments = [];
     if (_base != null) {
       segments.addAll(_base.segments);
     }
 
     if (link.startsWith('/')) {
-      return '/${p.url.joinAll(segments)}$link';
+      link = link.substring(1);
+      segments.add(link);
+      return '/${p.url.joinAll(segments)}';
     }
 
     List<String> outletsPath = [];
@@ -54,6 +56,7 @@ class Location {
     _url = url;
 
     List<MatchedEntry> newEntries = getMatchedEntries(url);
+
     if (_activatedEntries.isNotEmpty) {
       List<MatchedEntry> entriesToRemove = [];
 
@@ -142,9 +145,20 @@ class Location {
 
 class OutletHolder {
   final RouterOutlet outlet;
-  final Iterable<PathPattern> paths;
+  final List<PathPattern> paths;
 
-  OutletHolder(this.outlet, this.paths);
+  OutletHolder(this.outlet, Iterable<PathPattern> paths)
+      : paths = sortPaths(paths);
+
+  static List<PathPattern> sortPaths(Iterable<PathPattern> paths) {
+    List<PathPattern> sorted = paths.toList();
+    mergeSort(sorted, compare: (PathPattern p1, PathPattern p2) {
+      if (p1.original == '' && p2.original != '') return 1;
+      if (p2.original == '' && p1.original != '') return -1;
+      return 0;
+    });
+    return sorted;
+  }
 }
 
 class MatchedEntry {
@@ -156,7 +170,7 @@ class MatchedEntry {
   }
 
   String toString() {
-    String pattern = peek.pattern.segments.join('/');
+    String pattern = p.url.joinAll(peek.pattern.segments);
 
     for (String parameter in peek.parameters.keys) {
       String parameterValue = peek.parameters[parameter];
@@ -169,6 +183,7 @@ class MatchedEntry {
   Map<String, String> get parameters => peek.parameters;
 
   bool isSameEntry(MatchedEntry other) =>
+      outlet.outlet == other.outlet.outlet &&
       peek.joinedSegments == other.peek.joinedSegments;
 }
 
